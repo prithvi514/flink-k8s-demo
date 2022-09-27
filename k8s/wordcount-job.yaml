@@ -1,0 +1,25 @@
+apiVersion: flink.apache.org/v1beta1
+kind: FlinkDeployment
+metadata:
+  name: basic-example
+spec:
+  image: flink-k8s:latest
+  imagePullPolicy: Never
+  flinkVersion: v1_14
+  flinkConfiguration:
+    taskmanager.numberOfTaskSlots: "2"
+  serviceAccount: flink
+  jobManager:
+    resource:
+      memory: "2048m"
+      cpu: 1
+  taskManager:
+    resource:
+      memory: "2048m"
+      cpu: 1
+  job:
+    jarURI: local:///opt/flink/examples/streaming/flink-k8s-demo-assembly-0.1-SNAPSHOT.jar
+    args: [--output /tmp/result]
+    entryClass: org.example.WordCount
+    parallelism: 2
+    upgradeMode: stateless

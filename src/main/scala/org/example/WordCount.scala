@@ -19,6 +19,8 @@ package org.example
  */
 
 import org.apache.flink.api.scala._
+import org.apache.flink.api.scala.ExecutionEnvironment
+import org.apache.flink.api.common.typeinfo.TypeInformation
 
 /**
  * Implements the "WordCount" program that computes a simple word occurrence histogram
@@ -47,7 +49,9 @@ object WordCount {
       .sum(1)
 
     // execute and print result
-    counts.print()
+    val final_counts = counts
+
+    final_counts.print()
 
   }
 }

@@ -1,5 +1,12 @@
-A Flink application project using Scala and SBT.
 
-To run and test your application use SBT invoke: 'sbt run'
+# K8s commands
+```
+kubectl create -f wordcount-job.yaml
+kubectl logs -f deploy/basic-example
+kubectl delete flinkdeployment/basic-example
+```
 
-In order to run your application from within IntelliJ, you have to select the classpath of the 'mainRunner' module in the run/debug configurations. Simply open 'Run -> Edit configurations...' and then select 'mainRunner' from the Use classpath of module dropbox.
+# Errors
+```
+Caused by: org.apache.flink.api.common.InvalidProgramException: Job was submitted in detached mode. Results of job execution, such as accumulators, runtime, etc. are not available. Please make sure your program doesn't call an eager execution function [collect, print, printToErr, count].
+```
