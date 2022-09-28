@@ -1,0 +1,136 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: zookeeper
+  name: zookeeper
+spec:
+  ports:
+    - name: zk-internal
+      port: 2181
+      protocol: TCP
+  selector:
+    app: zookeeper
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: zookeeper
+  labels:
+    app: zookeeper
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: zookeeper
+  template:
+    metadata:
+      labels:
+        app: zookeeper
+    spec:
+      containers:
+      - name: zookeeper
+        image: confluentinc/cp-zookeeper:5.2.1
+        imagePullPolicy: IfNotPresent
+        ports:
+          - containerPort: 2181
+        env:
+        - name: ZOOKEEPER_SERVER_ID
+          value: "1"
+        - name: ZOOKEEPER_CLIENT_PORT
+          value: "2181"
+        - name: ZOOKEEPER_TICK_TIME
+          value: "2000"
+        - name: ZOOKEEPER_SERVERS
+          value: "zookeeper:22888:23888"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: kafka1
+  name: kafka1
+spec:
+  ports:
+    - name: internal
+      port: 29092
+      targetPort: 29092
+      nodePort: 30290
+      protocol: TCP
+    - name: broker
+      port: 9092
+      targetPort: 9092
+      nodePort: 30909
+      protocol: TCP
+  type: NodePort            
+  selector:
+    app: kafka1        
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: kafka1
+  labels:
+    app: kafka1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kafka1
+  template:
+    metadata:
+      labels:
+        app: kafka1
+    spec:
+      containers:
+      - name: kafka1
+        image: confluentinc/cp-enterprise-kafka:5.2.1
+        imagePullPolicy: IfNotPresent
+        ports:
+          - containerPort: 29092
+          - containerPort: 9092
+        env:
+        - name: KAFKA_ZOOKEEPER_CONNECT
+          value: "zookeeper:2181"
+        - name: KAFKA_LISTENER_SECURITY_PROTOCOL_MAP
+          value: "PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT"
+        - name: KAFKA_INTER_BROKER_LISTENER_NAME
+          value: "PLAINTEXT"
+        - name: KAFKA_ADVERTISED_LISTENERS
+          value: "PLAINTEXT://kafka1:9092,PLAINTEXT_HOST://localhost:29092"
+        - name: KAFKA_LISTENERS
+          value: "PLAINTEXT://:9092,PLAINTEXT_HOST://:29092"          
+        - name: KAFKA_BROKER_ID
+          value: "1"          
+        - name: KAFKA_BROKER_RACK
+          value: "r1"
+        - name: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR
+          value: "1"
+        - name: KAFKA_DELETE_TOPIC_ENABLE
+          value: "true"
+        - name: KAFKA_AUTO_CREATE_TOPICS_ENABLE
+          value: "true"                                                         
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: kafkacat
+  labels:
+    app: kafkacat
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kafkacat
+  template:
+    metadata:
+      labels:
+        app: kafkacat
+    spec:
+      containers:
+      - name: kafkacat
+        image: confluentinc/cp-kafkacat
+        imagePullPolicy: IfNotPresent 
+        command: ["/bin/sh"]
+        args: ["-c", "trap : TERM INT; sleep infinity & wait"]               
