@@ -24,25 +24,25 @@ object KafkaExample {
     val kafkaProperties = Map(
       "zookeeper.connect" -> "localhost:2181",
       "group.id" -> "flink",
-      "bootstrap.servers" -> "localhost:9092",
+      "bootstrap.servers" -> "kafka-svc:9092",
       "source.topic" -> "test-source",
       "sink.topic" -> "test-sink"
     )
 
     val producer = KafkaSink.builder[String]()
-      .setBootstrapServers(kafkaProperties("brokers"))
+      .setBootstrapServers(kafkaProperties("bootstrap.servers"))
       .setRecordSerializer(
         KafkaRecordSerializationSchema.builder()
-          .setTopic(kafkaProperties("source.topic"))
+          .setTopic(kafkaProperties("sink.topic"))
           .setValueSerializationSchema(new SimpleStringSchema())
           .build())
       .setDeliverGuarantee(DeliveryGuarantee.AT_LEAST_ONCE).build()
 
     val consumer = KafkaSource.builder[String]()
-      .setBootstrapServers(kafkaProperties("brokers"))
-      .setTopics("sink.topic")
+      .setBootstrapServers(kafkaProperties("bootstrap.servers"))
+      .setTopics(kafkaProperties("source.topic"))
       .setGroupId(kafkaProperties("group.id"))
-      .setStartingOffsets(OffsetsInitializer.latest())
+      .setStartingOffsets(OffsetsInitializer.earliest())
       .setValueOnlyDeserializer(new SimpleStringSchema())
       .build()
 
@@ -50,22 +50,11 @@ object KafkaExample {
 
     val stringInputStream: DataStream[String] = env.fromSource(consumer,WatermarkStrategy.noWatermarks(),"Flink-Consumer")
 
-    val events = stringInputStream.map(new WordsCapitalizer())//.addSink(producer)
+    val events = stringInputStream.map(new WordsCapitalizer())
 
     events.sinkTo(producer)
 
-
-
-//    val stringInputStream = new DataStream[String]()
-//
-//
-//    val stringInputStream:DataStream[String] = env.addSource(consumer)
-//    stringInputStream.map(new WordsCapitalizer()).addSink(producer)
-//    stringInputStream.addSink(producer)
-
-    //env.fromSource(producer, WatermarkStrategy.noWatermarks(), "Kafka-Flink-Source")
-    //env.execute("Socket Window WordCount")
-
+    env.execute("Kafka Example")
 
   }
 }
