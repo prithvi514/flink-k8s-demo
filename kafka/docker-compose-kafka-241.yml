@@ -3,6 +3,7 @@ version: "3.0"
 services:
   kafka1:
     image: confluentinc/cp-enterprise-kafka:5.2.1
+    container_name: kafka-1
     depends_on:
       - zookeeper
     ports:
