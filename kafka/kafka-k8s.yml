@@ -126,9 +126,16 @@ spec:
       labels:
         app: kafkacat
     spec:
+      volumes:
+      - name: data-file
+        hostPath:
+          path: /tmp/data/access.log
       containers:
       - name: kafkacat
+        volumeMounts:
+        - mountPath: /tmp/data/access.log
+          name: data-file
         image: confluentinc/cp-kafkacat
-        imagePullPolicy: IfNotPresent 
+        imagePullPolicy: Always
         command: ["/bin/sh"]
-        args: ["-c", "trap : TERM INT; sleep infinity & wait"]               
+        args: ["-c", "trap : TERM INT; sleep infinity & wait"]              
