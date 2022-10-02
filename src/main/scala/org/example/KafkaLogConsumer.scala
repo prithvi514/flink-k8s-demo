@@ -18,7 +18,7 @@ import scala.util.matching.Regex
 //    var returnFlag: Boolean = false
 //    val logPattern: Regex = """^([\d.]+) (\S+) (\S+) \[(.*)\] \"([^\s]+) (/[^\s]*) HTTP/[^\s]+\" (\d{3}) (\d+) \"([^\"]+)\" \"([^\"]+)\" (\S+)""".r
 //    for (patternMatch <- logPattern.findAllMatchIn(s))
-//      if(patternMatch.group(7) != 200){
+//      if(patternMatch.group(7) != "200"){
 //        returnFlag = true
 //      }
 //    returnFlag
@@ -66,9 +66,8 @@ object KafkaLogConsumer {
         override def filter(value: String): Boolean = {
           var returnFlag: Boolean = false
           val logPattern: Regex = """^([\d.]+) (\S+) (\S+) \[(.*)\] \"([^\s]+) (/[^\s]*) HTTP/[^\s]+\" (\d{3}) (\d+) \"([^\"]+)\" \"([^\"]+)\" (\S+)""".r
-          // ToDo: Filter not working as expected
           for (patternMatch <- logPattern.findAllMatchIn(value))
-            if (patternMatch.group(7) != 200) {
+            if (patternMatch.group(7) != "200") {
               returnFlag = true
             }
           returnFlag
